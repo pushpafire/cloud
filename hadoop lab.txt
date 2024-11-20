@@ -3,6 +3,8 @@ sudo apt update
 sudo apt install ssh
 
 wget https://www.apache.org/dyn/closer.cgi/hadoop/common/hadoop-3.3.6/hadoop-3.3.6.tar.gz
+or 
+wget https://dlcdn.apache.org/hadoop/common/hadoop-3.3.6/hadoop-3.3.6.tar.gz
 
 tar -xzf hadoop-3.3.6.tar.gz.3
 
