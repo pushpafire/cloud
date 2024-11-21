@@ -1,0 +1,82 @@
+const express = require('express');
+const bodyparser = require('body-parser');
+const axios = require('axios');
+
+const app = express();
+app.use(bodyparser.json());
+
+const wapi = '087d9e48b20eacc95e8734ff4a3d1d9f';
+const wid = 'https://api.openweathermap.org/data/2.5/weather';
+
+async function getwea(city) {
+    try {
+        const response = await axios.get(wid, {
+            params: {
+                q: city,
+                appid: wapi,
+                units: 'metric'
+            }
+        });
+
+        return response.data;
+    } catch (error) {
+        console.log("error", error);
+        return null;
+    }
+}
+
+app.get('/weather/:city', async (req, res) => {
+    const city = req.params.city;
+    const wea = await getwea(city);
+
+    if (wea) {
+        // Dynamically generate the HTML content
+        const weatherHTML = `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Weather in ${wea.name}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; background-color: #f0f0f0; color: #333; }
+                    .container { width: 60%; margin: 0 auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+                    h1 { text-align: center; }
+                    .weather-details { display: flex; justify-content: space-between; margin-top: 20px; }
+                    .weather-item { font-size: 18px; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>Weather in ${wea.name}, ${wea.sys.country}</h1>
+                    <div class="weather-details">
+                        <div class="weather-item"><strong>Condition:</strong> ${wea.weather[0].description}</div>
+                        <div class="weather-item"><strong>Temperature:</strong> ${wea.main.temp}°C</div>
+                    </div>
+                    <div class="weather-details">
+                        <div class="weather-item"><strong>Min Temp:</strong> ${wea.main.temp_min}°C</div>
+                        <div class="weather-item"><strong>Max Temp:</strong> ${wea.main.temp_max}°C</div>
+                    </div>
+                    <div class="weather-details">
+                        <div class="weather-item"><strong>Wind Speed:</strong> ${wea.wind.speed} m/s</div>
+                        <div class="weather-item"><strong>Humidity:</strong> ${wea.main.humidity}%</div>
+                    </div>
+                    <div class="weather-details">
+                        <div class="weather-item"><strong>Pressure:</strong> ${wea.main.pressure} hPa</div>
+                        <div class="weather-item"><strong>Visibility:</strong> ${wea.visibility / 1000} km</div>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `;
+
+        res.send(weatherHTML);
+    } else {
+        res.status(400).json({ message: 'Error fetching weather data' });
+    }
+});
+
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+});
